@@ -4,6 +4,7 @@ import platform
 import sys
 import time
 import traceback
+from re import compile, match
 from base64 import b64encode
 from datetime import datetime
 from random import choice
@@ -273,7 +274,7 @@ class ImpfterminService():
         return False
 
     @retry_on_failure()
-    def termin_suchen(self, plz):
+    def termin_suchen(self, plz, ab_datum = ""):
         """Es wird nach einen verfügbaren Termin in der gewünschten PLZ gesucht.
         Ausgewählt wird der erstbeste Termin (!).
         Zurückgegeben wird das Ergebnis der Abfrage und der Status-Code.
@@ -306,6 +307,21 @@ class ImpfterminService():
         if res.ok:
             res_json = res.json()
             terminpaare = res_json.get("termine")
+            # Filterung der Terminpaare nach frühestem Datum
+            if terminpaare and ab_datum is not "":
+                self.log.info(f"{len(terminpaare)} Terminpaare verfügbar mit folgenden Daten für den 1. Termin:")
+                for terminpaar in terminpaare:
+                    ts = datetime.fromtimestamp(terminpaar[0]["begin"] / 1000).strftime(
+                        '%d.%m.%Y')
+                    self.log.info(f"{ts}")
+                terminpaare = [
+                    terminpaar for terminpaar in terminpaare if
+                    datetime.fromtimestamp(terminpaar[0]["begin"] / 1000) >= datetime.strptime(ab_datum, "%d.%m.%Y")]
+                self.log.info(f"Davon sind folgende {len(terminpaare)} Daten an oder nach dem {ab_datum}:")
+                for terminpaar in terminpaare:
+                    ts = datetime.fromtimestamp(terminpaar[0]["begin"] / 1000).strftime(
+                        '%d.%m.%Y')
+                    self.log.info(f"{ts}")
             if terminpaare:
                 # Auswahl des erstbesten Terminpaares
                 self.terminpaar = choice(terminpaare)
@@ -420,12 +436,13 @@ class ImpfterminService():
             return False
 
     @staticmethod
-    def terminsuche(code: str, plz_impfzentren: list, kontakt: dict, check_delay: int = 30):
+    def terminsuche(code: str, plz_impfzentren: list, kontakt: dict, ab_datum: str = "", check_delay: int = 30):
         """
         Workflow für die Terminbuchung.
 
         :param code: 14-stelliger Impf-Code
         :param plz_impfzentren: Liste mit PLZ von Impfzentren
+        :param ab_datum: frühestes Datum für einen zu buchenden Termin
         :param kontakt: Kontaktdaten der zu impfenden Person als JSON
         :param check_delay: Zeit zwischen Iterationen der Terminsuche
         :return:
@@ -511,6 +528,20 @@ def setup_terminsuche():
         plz_impfzentren = input("> PLZ's der Impfzentren: ")
         plz_impfzentren = list(set([plz.strip() for plz in plz_impfzentren.split(",")]))
 
+        print("\nAb welchem Datum soll ein Termin gebucht werden? Ein gefundenes Terminpaar wird nur dann gebucht,\n"
+            "wenn der 1. Termin an oder nach diesem Datum ist. Wenn kein Datum angegeben wird, kommen alle Terminpaare\n"
+            "in Frage.")
+        # Sicherstellen, dass das Datum ein valides Format hat. 
+        _ab_datum_valid = False
+        while not _ab_datum_valid:
+            ab_datum = input("> frühestes Datum für Termin (TT.MM.JJJJ): ")
+            ab_datum = ab_datum.strip()
+            datum_regex = compile(r"^(0[1-9]|[12][0-9]|3[01])\.(0[1-9]|1[012])\.\d{4}$")
+            if len(ab_datum) == 0 or datum_regex.match(ab_datum):
+                _ab_datum_valid = True
+            else:
+                print(f"Das eingegebene Datum {ab_datum} scheint ungültig. Bitte das Datum in folgendem Format eingeben: 20.05.2021.")
+        
         anrede = input("\n> Anrede (Frau/Herr/...): ")
         vorname = input("> Vorname: ")
         nachname = input("> Nachname: ")
@@ -553,6 +584,7 @@ def setup_terminsuche():
         kontaktdaten = {
             "code": code,
             "plz_impfzentren": plz_impfzentren,
+            "ab_datum": ab_datum,
             "kontakt": kontakt
         }
 
@@ -574,6 +606,11 @@ def setup_terminsuche():
         else:
             plz_impfzentren = kontaktdaten["plz_impfzentren"]
 
+        if kontaktdaten.get("ab_datum"):
+            ab_datum = kontaktdaten["ab_datum"]
+        else:
+            ab_datum = ""
+
         kontakt = kontaktdaten["kontakt"]
         print(f"\nKontaktdaten wurden geladen für: {kontakt['vorname']} {kontakt['nachname']}\n")
     except KeyError as exc:
@@ -582,7 +619,7 @@ def setup_terminsuche():
               "deine Daten beim Programmstart erneut ein.")
         raise exc
 
-    ImpfterminService.terminsuche(code=code, plz_impfzentren=plz_impfzentren, kontakt=kontakt,
+    ImpfterminService.terminsuche(code=code, plz_impfzentren=plz_impfzentren, ab_datum=ab_datum, kontakt=kontakt,
                                   check_delay=30)
 
 
