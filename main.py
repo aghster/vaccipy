@@ -463,7 +463,7 @@ class ImpfterminService():
 
                 # durchlaufe jede eingegebene PLZ und suche nach Termin
                 for plz in its.plz_impfzentren:
-                    termin_gefunden, status_code = its.termin_suchen(plz)
+                    termin_gefunden, status_code = its.termin_suchen(plz, ab_datum)
 
                     # Durchlauf aller PLZ unterbrechen, wenn Termin gefunden wurde
                     if termin_gefunden:
