@@ -1,5 +1,6 @@
 # vaccipy
 [![build-windows](https://github.com/iamnotturner/vaccipy/actions/workflows/build_windows.yaml/badge.svg?branch=master)](https://github.com/iamnotturner/vaccipy/actions/workflows/build_windows.yaml)
+[![build-linux-64](https://github.com/iamnotturner/vaccipy/actions/workflows/build_linux.yaml/badge.svg)](https://github.com/iamnotturner/vaccipy/actions/workflows/build_linux.yaml)
 
 Automatisierte Impfterminbuchung auf [www.impfterminservice.de](https://www.impfterminservice.de/).</br>
 
@@ -7,10 +8,16 @@ Automatisierte Impfterminbuchung auf [www.impfterminservice.de](https://www.impf
 * Automatisches suchen und buchen von verfügbaren Impfterminen
 * [Suche bei mehreren Impfzentren gleichzeitig](https://github.com/iamnotturner/vaccipy/wiki/Ein-Code-fuer-mehrere-Impfzentren)
 * Warteschlange umgehen
-* **🌟 NEU:** Dauerhaft Impf-Code's generieren - egal wo, egal für wen!</br></br>
+* **🌟 NEU:** Dauerhaft Impf-Code's generieren - egal 
+wo, egal für wen!
+* **🌟 NEU:** [Beta Branch (neue, aber noch nicht final getestete Features)](https://github.com/iamnotturner/vaccipy/tree/beta)
+</br></br>
 
 <a href="https://cntr.click/9ypzBLb">
 <img width="180" height="60" src="https://www.laughingbirdsoftware.com/wp-content/uploads/2020/07/Download-for-Windows-Button.png">
+</a>
+<a href="https://cntr.click/6Q0PXkK">
+<img width="180" heigth="60"src=https://logos-world.net/wp-content/uploads/2020/11/Ubuntu-Emblem.png>
 </a>
 
 ## Shoutout an:
@@ -94,6 +101,7 @@ und anschließend rechts-oben auf "Buchung verwalten" klicken.
 
 * Python 3 (getestet mit Python 3.9)
 * pip (zur Installation der Python-Module, getestet mit pip3)
+* Google Chrome
 
 Die notwendigen Python-Module können mittels pip installiert werden.
 
@@ -120,10 +128,10 @@ Zum Ausführen des Programms, einfach die passende Distribution (basierend auf d
 
 ### Download 
 Verfügbare Distributionen:
-- [x] [Windows](https://download-directory.github.io/?url=https%3A%2F%2Fgithub.com%2Fiamnotturner%2Fvaccipy%2Ftree%2Fmaster%2Fdist%2Fwindows-terminservice) 
+- [x] [Windows](https://cntr.click/9ypzBLb)  
+- [x] [Linux](https://cntr.click/6Q0PXkK) 
 - [ ] MacOS Intel
-- [ ] MacOS M1 
-- [ ] Linux 
+- [ ] MacOS M1
 
 **Ausführung Windows:** 
 - .zip Ordner entpacken
@@ -144,7 +152,9 @@ Aktuelle Pipelines:
 
 Zum Erstellen der Distributionen wird [pyinstaller](https://pyinstaller.readthedocs.io/en/stable/index.html) verwendet.  
 Schritte zum Erstellen einer Distribution: 
-- Erstelle eine .spec Datei für die main.py (einmalig)
+- Erstelle eine .spec Datei für die main.py (einmalig)  
+    ⚠️ACHTUNG⚠️: Beim erstellen der .spec den python code für `cloudscraper` nicht löschen! 
+
 - Erstelle die Distribution basierend auf der erstellten .spec Datei:
     ```shell
     pyinstaller --clean specs/SPECNAME.spec
@@ -154,12 +164,22 @@ Schritte zum Erstellen einer Distribution:
 
 #### Windows
 
-.spec Datei erstellen und anschließend Distribution erstellen:
+.spec Datei erstellen und anschließend Distribution erstellen:  
+⚠️ACHTUNG⚠️: Beim erstellen der .spec den python code für `cloudscraper` nicht löschen! 
 ```shell
-pyi-makespec main.py --specpath "specs//" --add-binary "..\tools\chromedriver\chromedriver-windows.exe;tools\chromedriver\" --name windows-terminservice --hidden-import plyer.platforms.win.notification
+pyi-makespec main.py --specpath "specs//" --add-binary "..\tools\chromedriver\chromedriver-windows.exe;tools\chromedriver\" --name windows-terminservice --hidden-import plyer.platforms.win.notification --hidden-import cloudscraper
 
 pyinstaller --clean specs/windows-terminservice.spec
 ```     
+
+#### Linux
+```shell 
+pyi-makespec main.py --specpath "specs//" --add-binary "../tools/chromedriver/chromedriver-linux-64;tools/chromedriver/" --name linux-64-terminservice --hidden-import cloudscraper
+
+pyinstaller --clean specs/linux-64-terminservice.spec
+
+```
+
 
 #### Resources
 - [pyinstaller docs](https://pyinstaller.readthedocs.io/en/stable/index.html)
@@ -170,8 +190,8 @@ Es gibt noch ein paar Features, die cool wären. Die Ideen werden hier mal gesam
 werden (von uns oder euch - feel free!) irgendwann hinzukommen:
 
 - [ ] Datum eingrenzen bei der Terminwahl
-- [ ] Macosx Build / Pipeline
-- [ ] Linux Build / Pipeline
+- [ ] Github Pages
+- [ ] Macosx Build / Pipeline (Mac currently blocks the app: [Branch](https://github.com/iamnotturner/vaccipy/tree/mac-intel-build))
 - [ ] Code Zertifikate für Windows (gegen Virusmeldung)
 - [ ] Artifacts, Packages und Releases
 
@@ -190,7 +210,7 @@ weshalb folgende Automatisierungen und Erweiterungen **NICHT** kommen werden:
 </a>
 .. musst du dich nicht. Es freut uns sehr, wenn wir dir die Terminsuche etwas erleichtern konnten. 
 
-Für den Fall, dass du dein Dank gerne in Geld ausdrücken möchtest, haben wir [hier eine Spendenaktion](https://www.aerzte-ohne-grenzen.de/spenden-sammeln?cfd=pjs3m) eingerichtet. [ÄRZTE OHNE GRENZEN](www.aerzte-ohne-grenzen.de) leistet weltweit medizinische Nothilfe in Krisen- und Kriegsgebieten und nach Naturkatastrophen.
+Für den Fall, dass du dein Dank gerne in Geld ausdrücken möchtest, haben wir [hier eine Spendenaktion](https://www.aerzte-ohne-grenzen.de/spenden-sammeln?cfd=pjs3m) eingerichtet. [ÄRZTE OHNE GRENZEN](https://www.aerzte-ohne-grenzen.de) leistet weltweit medizinische Nothilfe in Krisen- und Kriegsgebieten und nach Naturkatastrophen.
 
 Es wäre mega cool, wenn du dich daran beteiligst - ist aber vollkommen freiwillig, also no pressure 😉
 
